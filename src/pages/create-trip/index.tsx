@@ -4,13 +4,21 @@ import { GuestsModal } from './guests-modal'
 import { ConfirmationModal } from './confirmation-modal'
 import { DestinationAndDate } from './steps/destination-and-date'
 import { InviteGuests } from './steps/invite-guests'
+import { DateRange } from 'react-day-picker'
+import { api } from "../../lib/axios"
 
 export function CreateTripPage() {
-const navigate = useNavigate()
+  const navigate = useNavigate()
   const [isGuestsInputVisible, setIsGuestsInputVisible] = useState(false)
   const [isGuestsModalVisible, setIsGuestsModalVisible] = useState(false)
-  const [emailsToInvite, setEmailsToInivte] = useState(Array<string>)
   const [isConfirmationModalVisible, setIsConfirmationModalVisible] = useState(false)
+
+  const [emailsToInvite, setEmailsToInivte] = useState(Array<string>)
+
+  const [destination, setDestination] = useState('')
+  const [ownerName, setOwnerName] = useState('')
+  const [ownerEmail, setOwnerEmail] = useState('')
+  const [eventStartAndEndDates, setEventStartAndEndDates] = useState<DateRange | undefined>()
 
   function showGuestsInput() {
     setIsGuestsInputVisible(true)
@@ -52,9 +60,37 @@ const navigate = useNavigate()
     setEmailsToInivte(emailsToInvite.filter(email => email !== emailRemove))
   }
 
-  function createTrip(event: FormEvent<HTMLFormElement>) {
+  async function createTrip(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    navigate("/trips/123");
+
+    if (!destination) {
+      return
+    }
+
+    if (!eventStartAndEndDates?.from || !eventStartAndEndDates?.to) {
+      return
+    }
+
+    if (emailsToInvite.length === 0) {
+      return
+    }
+
+    if (!ownerName || !ownerEmail) {
+      return
+    }
+
+    const response = await api.post('/trips', {
+      destination: destination,
+      starts_at: eventStartAndEndDates.from,
+      ends_at: eventStartAndEndDates.to,
+      emails_to_invite: emailsToInvite,
+      owner_name: ownerName,
+      owner_email: ownerEmail
+    })
+
+    const { tripId } = response.data
+
+    navigate(`/trips/${tripId}`)
   }
 
   return (
@@ -67,18 +103,21 @@ const navigate = useNavigate()
 
         <div className='space-y-4'>
             <DestinationAndDate
-                isGuestsInputVisible={isGuestsInputVisible}
-                hideGuestsInput={hideGuestsInput}
-                showGuestsInput={showGuestsInput}
+              isGuestsInputVisible={isGuestsInputVisible}
+              eventStartAndEndDates={eventStartAndEndDates}
+              hideGuestsInput={hideGuestsInput}
+              showGuestsInput={showGuestsInput}
+              setDestination={setDestination}
+              setEventStartAndEndDates={setEventStartAndEndDates}
             />
 
           {
             isGuestsInputVisible && (
-                <InviteGuests 
-                    showGuestsModal={showGuestsModal}
-                    emailsToInvite={emailsToInvite}
-                    showConfirmationModal={showConfirmationModal}
-                />
+              <InviteGuests 
+                showGuestsModal={showGuestsModal}
+                emailsToInvite={emailsToInvite}
+                showConfirmationModal={showConfirmationModal}
+              />
             )
           }
         </div>
@@ -101,10 +140,12 @@ const navigate = useNavigate()
 
       {
         isConfirmationModalVisible && (
-            <ConfirmationModal 
-                hideConfirmationModal={hideConfirmationModal}
-                createTrip={createTrip}
-            />
+          <ConfirmationModal 
+            hideConfirmationModal={hideConfirmationModal}
+            createTrip={createTrip}
+            setOwnerName={setOwnerName}
+            setOwnerEmail={setOwnerEmail}
+          />
         )
       }
 

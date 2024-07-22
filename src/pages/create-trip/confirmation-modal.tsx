@@ -5,6 +5,8 @@ import { Button } from "../../components/button";
 interface ConfirmationModalProps{
     hideConfirmationModal: () => void
     createTrip: (event: FormEvent<HTMLFormElement>) => void
+    setOwnerName: (name: string) => void
+    setOwnerEmail: (email: string) => void
 }
 
 export function ConfirmationModal (props: ConfirmationModalProps){
@@ -25,11 +27,11 @@ export function ConfirmationModal (props: ConfirmationModalProps){
         <form onSubmit={props.createTrip} className='space-y-3'>
           <div className='h-14 px-4 bg-zinc-950 border border-zinc-800 rounded-lg flex items-center gap-2'>
             <User className='size-5 text-zinc-400 ml-2'/>
-            <input type="text" name="name" placeholder="Seu nome completo" className="flex-1 pr-4 bg-transparent text-lg placeholder-zinc-400 outline-none"/>
+            <input type="text" name="name" placeholder="Seu nome completo" onChange={event => props.setOwnerName(event.target.value)} className="flex-1 pr-4 bg-transparent text-lg placeholder-zinc-400 outline-none"/>
           </div>
           <div className='h-14 px-4 bg-zinc-950 border border-zinc-800 rounded-lg flex items-center gap-2'>
             <AtSign className='size-5 text-zinc-400 ml-2'/>
-            <input type="email" name="email" placeholder="Seu email pessoal" className="flex-1 pr-4 bg-transparent text-lg placeholder-zinc-400 outline-none"/>
+            <input type="email" name="email" placeholder="Seu email pessoal" onChange={event => props.setOwnerEmail(event.target.value)} className="flex-1 pr-4 bg-transparent text-lg placeholder-zinc-400 outline-none"/>
           </div>
           <Button type="submit" colors="primary" size='full'>
             Confirmar criação da viagem
